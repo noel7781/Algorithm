@@ -1,40 +1,29 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <cstring>
+#include <algorithm>
 
 using namespace std;
 
-struct Node {
-    int num;
-    vector<Node*> child;
-    Node(int num): num(num), child(vector<Node*>()) {}
-};
+typedef pair<int, int> pii;
 
 int n, r, q;
+vector<vector<int> > g;
+bool visit[100001];
+int cache[100001];
 
-vector<vector<int> > adj;
-vector<bool> use;
-
-int cache[100003];
-
-void getTree(vector<Node*> tree, int parent) {
-    use[parent] = true;
-    for(int i = 0; i < adj[parent].size(); ++i) {
-        int next = adj[parent][i];
-        if(!use[next]) {
-            tree[parent]->child.push_back(tree[next]);
-            getTree(tree, next);
-        }
-    }
-}
-
-int getCount(vector<Node*> tree, int n) {
-    int& ret = cache[n];
+int dfs(int root) {
+    int& ret = cache[root];
     if(ret != -1) return ret;
     ret = 1;
-    Node* now = tree[n];
-    for(int i = 0; i < now->child.size(); ++i) {
-        ret += getCount(tree, now->child[i]->num);
+    bool isLeaf = true;
+    for(int next: g[root]) {
+        if(!visit[next]) {
+            visit[next] = true;
+            ret += dfs(next);
+            isLeaf = false;
+        }
     }
     return ret;
 }
@@ -44,21 +33,16 @@ int main() {
     cin.tie(0);
     memset(cache, -1, sizeof(cache));
     cin >> n >> r >> q;
-    adj.assign(n, vector<int>());
-    use.assign(n, false);
-    vector<Node*> tree(n, 0);
-    for(int i = 0; i < n; ++i) {
-        tree[i] = new Node(i);
-    }
+    g.assign(n+1, vector<int>());
     for(int i = 0; i < n-1; ++i) {
         int a, b; cin >> a >> b;
-        adj[a-1].push_back(b-1);
-        adj[b-1].push_back(a-1);
+        g[a].push_back(b);
+        g[b].push_back(a);
     }
-    getTree(tree, r-1);
-    getCount(tree, r-1);
+    visit[r] = true;
+    dfs(r);
     for(int i = 0; i < q; ++i) {
-        int k; cin >> k;
-        cout<< getCount(tree, k-1) << "\n";
+        int r; cin >> r;
+        cout << dfs(r) << "\n";
     }
 }
