@@ -1,29 +1,32 @@
 #include <iostream>
-#include <queue>
+#include <vector>
 
 using namespace std;
 
 typedef long long ll;
 
+ll n, k;
+
+bool count(ll x) {
+    ll cnt = 0;
+    for(int k = 1; k <= n; k++) {
+        ll div = min(x / k, n);
+        cnt += div;
+    }
+
+    return cnt >= k;
+}
+
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    int n, k; cin >> n >> k;
-    int lo = 1, hi = 1e9;
-    int mid = (lo + hi) / 2;
-    int ret = 1e9;
-    while(lo <= hi) {
-        int cnt = 0;
-        mid = (lo + hi) / 2;
-        for(int i = 1; i <= n; ++i) {
-            cnt += min(mid / i, n);
-        }
-        if(cnt >= k) {
-            hi = mid - 1;
-            ret = min(ret, mid);
+    cin >> n >> k;
+    ll lo = 0, hi = n*n+1;
+    while(lo+1 < hi) {
+        ll mid = (lo + hi) >> 1;
+        if(count(mid)) {
+            hi = mid;
         } else {
-            lo = mid + 1;
+            lo = mid;
         }
     }
-    cout << ret << "\n";
+    cout << hi << "\n";
 }
