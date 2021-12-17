@@ -9,51 +9,64 @@ using namespace std;
 typedef pair<int, int> pii;
 int L, K, C;
 vector<int> points;
-map<int, int> m;
 
-vector<int> permutation;
-vector<int> chosen;
-
-
-int search() {
-    printf("permuation size %d\n", permutation.size());
-	if(permutation.size() == C) {
-		// 순열 처리
-        printf("C: %d perm[0] %d\n", C, permutation[0]);
-        int ret = permutation[0];
-        for(int i = 0; i < C-1; i++) {
-            ret = max(ret, permutation[i+1]-permutation[i]);
+bool canBuild(int thr, int pos) {
+    int count = 1;
+    for(int i = 0; i < K; i++) {
+        if(pos + thr >= L) break;
+        if(i == 0 && points[i] > pos+thr) {
+            return 0;
         }
-        ret = max(ret, L - permutation[C-1]);
-        printf("Ret: %d\n", ret);
-        return ret;
-	} else {
-        int ret = 1e9;
-		for(int i = 0; i < K; ++i) {
-			if(chosen[i]) continue;
-			chosen[i] = true;
-			permutation.push_back(points[i]);
-            printf("push back %d\n", points[i]);
-            int tmp = search();
-            if(tmp <= ret) {
-                ret = tmp;
-                if(m.find(ret) == m.end())
-                    m[ret] = permutation[0];
-                else
-                    m[ret] = min(m[ret], permutation[0]);
-            } 
-			chosen[i] = false;
-			permutation.pop_back();
-		}
-        return ret;
-	}
+        if(points[i] == pos+thr) {
+            pos = points[i];
+            count += 1;
+            if(points[i] > pos + thr) return 0;
+        }
+        else if(points[i] > pos+thr) {
+
+            pos = points[i-1];
+            count += 1;
+            if(points[i] > pos + thr) return 0;
+        }
+
+    }
+    if(pos + thr >= L) {
+        return count <= C;
+    } else {
+        pos = points[K-1];
+        count += 1;
+        return pos+thr >= L && count <= C;
+    }
 }
 
-
 int check(int thr) {
-    vector<int> pick;
-    int maxDist = search();
-    return maxDist >= thr;
+    int count = 0;
+    int pos = 0;
+    for(int i = 0; i < K; i++) {
+        if(pos + thr >= L) break;
+        if(i == 0 && points[i] > pos+thr) {
+            return 0;
+        }
+        if(points[i] == pos+thr) {
+            pos = points[i];
+            count += 1;
+            if(points[i] > pos + thr) return 0;
+        }
+        else if(points[i] > pos+thr) {
+
+            pos = points[i-1];
+            count += 1;
+            if(points[i] > pos + thr) return 0;
+        }
+
+    }
+    if(pos + thr >= L) {
+        return count <= C;
+    } else {
+        pos = points[K-1];
+        count += 1;
+        return pos+thr >= L && count <= C;
+    }
 }
 
 int main() {
@@ -61,17 +74,23 @@ int main() {
     cin.tie(0);
     cin >> L >> K >> C;
     points.resize(K);
-    chosen.resize(K);
     for(auto &it: points) cin >> it;
     sort(points.begin(), points.end());
     int lo = 0, hi = 1e9+1;
     while(lo+1 < hi) {
         int mid = (lo + hi) >> 1;
         if(check(mid)) {
-            lo = mid;
-        } else {
             hi = mid;
+        } else {
+            lo = mid;
         }
     }
-    cout << lo <<  " " << m[lo] << "\n";
+    bool found = false;
+    for(int i = 0; i < K; i++) {
+        found = canBuild(hi, points[i]);
+        if(found) {
+            cout << hi << " " << points[i] << "\n";
+            return 0;
+        }
+    }
 }
