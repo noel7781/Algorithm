@@ -1,88 +1,42 @@
-#include <iostream>
-#include <vector>
-#include <cstring>
-#include <map>
+#include <bits/stdc++.h>
 
 using namespace std;
-typedef pair<int, int> pii;
 
-int n, m, h;
+int N, M, H;
 
-void printLadder(vector<vector<int> >& ladders) {
-    for(int i = 0; i < h; ++i) {
-        for(int j = 0; j < n-1; ++j) {
-            printf("ladders[%d][%d] : %d\n", i, j, ladders[i][j]);
-        }
+
+// [N][H]
+int ladders[11][31];
+
+int advance(int src, int h) {
+    if(h == H+1) {
+        return src;
     }
-}
-int move(vector<vector<int> >& ladders, int row, int col) {
-    if(row == h) {
-        return col;
-    }
-    if(col < n-1 && ladders[row][col] == 1) {
-        return move(ladders, row+1, col+1);
-    } else if (col > 0 && ladders[row][col-1] == 1) {
-        return move(ladders, row+1, col-1);
+    if(ladders[src][h] == 1) {
+        return advance(src+1, h+1);
+    } else if(ladders[src-1][h] == 1) {
+        return advance(src-1, h+1);
     } else {
-        return move(ladders, row+1, col);
+        return advance(src, h+1);
     }
 }
 
-bool check(vector<vector<int> >& ladders, pii info) {
-    int row = info.first, col = info.second;
-    if(ladders[row][col] == 1) return false;
-    if(col == 0) {
-        if(ladders[row][col+1] == 0) return true;
-        return false;
-    } else if(col > 0 && col < n-2) {
-        if(ladders[row][col-1] == 0 && ladders[row][col+1] == 0) return true;
-        return false;
-    } else {
-        if(ladders[row][col-1] == 0) return true;
-        return false;
-    }
-}
-
-void getPair(vector<vector<int> >& ladders, vector<pii>& pairs) {
-    for(int i = 0; i < h; ++i) {
-        for(int j = 0; j < n-1; ++j) {
-            pii now = make_pair(i, j);
-            if(check(ladders, now)) {
-                pairs.push_back(now);
-            }
-        }
-    }
-}
-
-bool addLadder(vector<vector<int> >& ladders, vector<pii>& pairs, int adder, int pos) {
-    if(adder == 0) {
-        for(int i = 0; i < n; ++i) {
-            if(move(ladders, 0, i) != i) {
-                return false;
-            }
+bool match(int add) {
+    if(add == 0) {
+        for(int n = 1; n <= N; n++) {
+            if(advance(n, 1) != n) return false;
         }
         return true;
     }
-    for(int i = pos+1; i < pairs.size(); ++i) {
-        if(check(ladders, pairs[i])) {
-            int row = pairs[i].first, col = pairs[i].second;
-            ladders[row][col] = 1;
-            if(addLadder(ladders, pairs, adder-1, i)) {
-                return true;
-            }
-            ladders[row][col] = 0;
-        }
-    }
-    return false;
-}
-
-int solve(vector<vector<int> >& ladders) {
-    int ret = -1;
-    vector<pii> pairs;
-    getPair(ladders, pairs);
-    for(int adder = 0; adder <= 3; ++adder) {
-        if(addLadder(ladders, pairs, adder, -1)) {
-            return adder;
+    bool ret = false;
+    for(int n = 1; n <= N; n++) {
+        for(int h = 1; h <= H; h++) {
+            if(ladders[n-1][h] == 1) continue;
+            if(ladders[n][h] == 1) continue;
+            ladders[n][h] = 1;
+            ret = ret | match(add-1);
+            if(ret) return ret;
+            ladders[n][h] = 0;
         }
     }
     return ret;
@@ -91,11 +45,18 @@ int solve(vector<vector<int> >& ladders) {
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
-    cin >> n >> m >> h;
-    vector<vector<int> > ladders(h, vector<int>(n-1, 0));
-    for(int i = 0; i < m; ++i) {
-        int pos, start; cin >> pos >> start;
-        ladders[pos-1][start-1] = 1;
+    cin >> N >> M >> H;
+    for(int i = 0; i < M; i++) {
+        int A, B; cin >> A >> B;
+        ladders[B][A] = 1;
     }
-    cout << solve(ladders) << "\n";
+    
+    for(int add = 0; add <= 3; ++add) {
+        if(match(add)) {
+            cout << add << "\n";
+            return 0;
+        }
+    }
+    cout << -1 << "\n";
+    return 0;
 }
