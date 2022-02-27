@@ -1,62 +1,64 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <cstring>
-
+#include <bits/stdc++.h>
 using namespace std;
+int N, M;
 
-int n, m;
-int PIV = (1 << 12);
-
-struct segTree {
-    int n;
-    vector<vector<int> > a;
-    segTree(int n) : n(n), a(2*n, vector<int>(2*n, 0)) {}
-    void init(const vector<vector<int> >& v) {
-        for(int i = 0; i < n; ++i) {
-            for(int j = 0; j < n; ++j) {
-                a[n+i][n+j] = v[i][j];
-            }
-        }
-        for(int i = n; i < 2*n; ++i) {
-            for(int j = n-1; j >= 0; --j) {
-                a[i][j] = a[i][j<<1] + a[i][j<<1 | 1];
-            }
-        }
-        for(int i = n; i < 2*n; ++i) {
-            for(int j = n-1; j >= 0; --j) {
-                a[i][j] = a[i<<1][j] + a[i<<1 | 1][j];
+int board[1025][1025];
+struct FenwickTree {
+    int tree[1025][1025];
+    void init() {
+        for(int i = 0; i <= 1024; i++) {
+            for(int j = 0; j <= 1024; j++) {
+                tree[i][j] = 0;
             }
         }
     }
     void update(int x, int y, int v) {
-        a[x+n][y+n] = v;
-        for(int i = y+n; i > 1; i >>= 1)  a[x+n][i>>1] = a[x+n][i] + a[x+n][i^1];
-        for(x = x+n; x > 1; x >>= 1){
-          for(int i = y+n; i >= 1; i >>= 1){
-            a[x>>1][i] = a[x][i]+a[x^1][i];        
-          }
+        for(int i = x; i <= N; i += (i & -i)) {
+            for(int j = y; j <= N; j += (j & -j)) {
+                tree[i][j] += v;
+            }
         }
+    }
+
+    int sum(int x, int y) {
+        int ret = 0;
+        for(int i = x; i > 0; i -= (i&-i)) {
+            for(int j = y; j > 0; j -= (j&-j)) {
+                ret += tree[i][j];
+            }
+        }
+        return ret;
     }
 };
 
 int main() {
-    cin >> n >> m;
-    vector<vector<int> > v(n, vector<int>(n, 0));
-    for(int i = 0; i < n; ++i) {
-        for(int j = 0; j < n; ++j) {
-            cin >> v[i][j];
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    struct FenwickTree ft;
+    ft.init();
+    cin >> N >> M;
+    for(int i = 1; i <= N; i++) {
+        for(int j = 1; j <= N; j++) {
+            cin >> board[i][j];
+            ft.update(i, j, board[i][j]);
         }
     }
-    segTree t(n);
-    while(m--) {
-        int c; cin >> c;
-        if(c == 1) {
-            int x1,y1,x2,y2; cin >> x1 >> y1 >> x2 >> y2;
-            cout << t.query(x1, y1, x2, y2) << "\n";
+    while(M--) {
+        int w, x1, y1, x2, y2, c;
+        cin >> w;
+        if(w == 0) {
+            cin >> x1 >> y1 >> c;
+            int uv = c - (ft.sum(x1, y1) - ft.sum(x1-1, y1) - ft.sum(x1, y1-1) + ft.sum(x1-1, y1-1));
+            ft.update(x1, y1, uv);
         } else {
-            int x1,y1,v; cin >> x1 >> y1 >> v;
-            t.update(x1, y1, v);
+            cin >> x1 >> y1 >> x2 >> y2;
+            if(x1 > x2) swap(x1, x2);
+            if(y1 > y2) swap(y1, y2);
+            int A = ft.sum(x2, y2);
+            int B = ft.sum(x2, y1-1);
+            int C = ft.sum(x1-1, y2);
+            int D = ft.sum(x1-1, y1-1);
+            cout << A - B - C + D << "\n";
         }
     }
 }

@@ -9,55 +9,32 @@ using namespace std;
 
 typedef long long ll;
 
-int n;
-ll limit = (ll)1e10;
-int ret_l = 0, ret_m = (n-1)/2, ret_r = n-1;
-map<tuple<int, int, int>, bool > mm;
-bool done = false;
-
-
-ll getSum(vector<ll>& v, int l, int m, int r) {
-    return v[l] + v[m] + v[r];
-}
-
-void solve(vector<ll>& v, int l, int m, int r, bool start) {
-    if(l >= m || m >= r) return;
-    if(done) return;
-    if(mm[make_tuple(l, m, r)] == true)
-        return;
-    mm[make_tuple(l, m, r)] = true;
-    ll sum = 1e10;
-    if(abs(v[l] + v[m] + v[r]) < limit) {
-        limit = abs(v[l] + v[m] + v[r]);
-        ret_l = l;
-        ret_m = m;
-        ret_r = r;
-    }
-    if(v[l] + v[m] + v[r] < 0) {
-        solve(v, l+1, m, r, 0);
-        solve(v, l, m+1, r, 0);
-    } else if(v[l] + v[m] + v[r] == 0) {
-        done = true;
-        ret_l = l;
-        ret_m = m;
-        ret_r = r;
-        return;
-    } else {
-        solve(v, l, m-1, r, 0);
-        solve(v, l, m, r-1, 0);
-    }
-    if(start)
-        cout << v[ret_l] << " " << v[ret_m] << " " << v[ret_r] << endl;
-}
+int N;
+vector<ll> V;
+ll abs_min_sum = -1;
+vector<int> ans;
 
 int main() {
-    ios_base::sync_with_stdio(false);
+    ios_base::sync_with_stdio(0);
     cin.tie(0);
-    cin >> n;
-    vector<ll> v(n);
-    for(int i = 0; i < n; ++i) {
-        cin >> v[i];
+    ans.assign(3, 0);
+    cin >> N;
+    V.resize(N);
+    for(auto &it: V) cin >> it;
+    sort(V.begin(), V.end());
+    for(int pivot = 0; pivot < N-2; pivot++) {
+        int left = pivot+1; int right = N-1;
+        while(left < right) {
+            ll sum = V[pivot] + V[left] + V[right];
+            if(abs(sum) < abs_min_sum || abs_min_sum == -1) {
+                abs_min_sum = abs(sum);
+                ans[0] = V[pivot];
+                ans[1] = V[left];
+                ans[2] = V[right];
+            }
+            if(sum < 0) left++;
+            else right--;
+        }
     }
-    sort(v.begin(), v.end());
-    solve(v, 0, (n-1)/2 ,n-1, 1);
+    for(auto x: ans) cout << x << " ";
 }
