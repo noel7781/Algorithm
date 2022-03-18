@@ -1,3 +1,5 @@
 test.*
 a.out
 *.dSYM
+*.vscode
+package-lock.json
