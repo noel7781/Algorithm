@@ -3,3 +3,4 @@ a.out
 *.dSYM
 *.vscode
 package-lock.json
+gen.py
