@@ -1,63 +1,45 @@
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <cstring>
-#include <algorithm>
-
+#include <bits/stdc++.h>
 using namespace std;
-
-int n, k, w;
-int waits[1001];
-int in_degree[1001];
-vector<vector<int> > g;
-
-int solve() {
-    int ret = 0;
-    int ans[1001];
-    memset(ans, 0, sizeof(ans));
-    queue<int> q;
-    vector<int> order;
-    for(int i = 1; i <= n; ++i) {
-        if(in_degree[i] == 0) { 
-            q.push(i);
-            ans[i] = waits[i];
-        }
-    }
-
-    while(!q.empty()) {
-        int v = q.front(); q.pop();
-        order.push_back(v);
-        for(int n: g[v]) {
-            ans[n] = max(ans[n], ans[v] + waits[n]);
-            if(!--in_degree[n]) {
-                q.push(n);
-            }
-        }
-    }
-    ret = ans[w];
-    return ret;
-}
-
+int N, K, W;
+vector<int> build_time;
+vector<vector<int> > adj;
 int main() {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
+    ios_base::sync_with_stdio(0); cin.tie(0);
     int t; cin >> t;
     while(t--) {
-        g.clear();
-        memset(waits, 0, sizeof(waits));
-        memset(in_degree, 0, sizeof(in_degree));
-        cin >> n >> k;
-        for(int i = 1; i <= n; ++i) {
-            cin >> waits[i];
+        build_time.clear();
+        adj.clear();
+        cin >> N >> K;
+        build_time.resize(N);
+        adj.resize(N);
+        vector<int> ins(N, 0);
+        vector<int> dists(N, 0);
+        for(auto &it: build_time) cin >> it;
+        for(int i = 0; i < K; i++) {
+            int P, Q; cin >> P >> Q;
+            P -= 1; Q -= 1;
+            adj[P].push_back(Q);
+            ins[Q]++;
         }
-        g.assign(n+1, vector<int>());
-        for(int i = 0; i < k; ++i) {
-            int a, b; cin >> a >> b;
-            g[a].push_back(b);
-            in_degree[b]++;
+        cin >> W;
+        queue<int> q;
+        int ret = 0;
+        for(int i = 0; i < N; i++) {
+            if(!ins[i]) {
+                q.push(i);
+                dists[i] = build_time[i];
+            }
         }
-        cin >> w;
-        int ret = solve();
-        cout << ret << "\n";
+        while(!q.empty()) {
+            int now = q.front(); q.pop();
+            for(auto next: adj[now]) {
+                dists[next] = max(dists[next], dists[now] + build_time[next]);
+                ins[next]--;
+                if(!ins[next]) {
+                    q.push(next);
+                }
+            }
+        }
+        cout << dists[W-1] << "\n";
     }
 }

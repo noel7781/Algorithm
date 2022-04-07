@@ -1,57 +1,34 @@
-#include <iostream>
-#include <vector>
-#include <cstring>
-
+#include <bits/stdc++.h>
 using namespace std;
+int N;
+vector<vector<int> > costs;
 
-int n;
-vector<int> R, G, B;
-vector<vector<int> > cost;
+int cache[1002][3][3];
 
-int cache[3][1003][4][4];
-
-int solve(int start, int pos, int before, int startColor) {
-    if(pos == n) {
-        return 0;
-    }
-    int& ret = cache[start][pos][before][startColor];
+int solve(int h, int idx, int start) {
+    if(h == N-1) return 0;
+    int& ret = cache[h][idx][start];
     if(ret != -1) return ret;
     ret = 1e9;
-    if(start == true) {
-        for(int i = 0; i < 3; ++i) {
-            ret = min(ret, cost[i][0] + solve(false, pos+1, i, i));
-        }
-        return ret;
-    } else {
-        if(pos != n-1) {
-            for(int i = 0; i < 3; ++i) {
-                if(i == before) continue;
-                ret = min(ret, cost[i][pos] + solve(false, pos+1, i, startColor));
-            }
-        } else {
-            for(int i = 0; i < 3; ++i) {
-                if(i == before || i == startColor) continue;
-                ret = min(ret, cost[i][pos] + solve(false, pos+1, i, startColor));
-            }
-        }
-        return ret;
+    for(int j = 0; j < 3; j++) {
+        if(j != idx && h != N-2) ret = min(ret, costs[h+1][j]+solve(h+1, j, start));
+        else if(j != idx && j != start) ret = min(ret, costs[h+1][j]+solve(h+1, j, start));
     }
+    return ret;
 }
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(0);
-    memset(cache, -1, sizeof(cache));
 
-    cin >> n;
-    R.assign(n, 0); G.assign(n, 0); B.assign(n, 0);
-    for(int i = 0; i < n; ++i) {
-        cin >> R[i];
-        cin >> G[i];
-        cin >> B[i];
+int main() {
+    ios_base::sync_with_stdio(0); cin.tie(0);
+    memset(cache, -1, sizeof(cache));
+    cin >> N; costs.resize(N+1, vector<int>(3, 0));
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < 3; j++) {
+            cin >> costs[i][j];
+        }
     }
-    cost.push_back(R);
-    cost.push_back(G);
-    cost.push_back(B);
-    cout << solve(1, 0, 0, -1) << "\n";
-    
+    int ret = 1e9;
+    for(int i = 0; i < 3; i++) {
+        ret = min(ret, costs[0][i]+solve(0, i, i));
+    }
+    cout << ret << "\n";
 }
