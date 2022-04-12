@@ -4,6 +4,7 @@ typedef pair<int, int> pii;
 int N, K;
 vector<pii> points;
 int psum[1000001];
+int arr[1000001];
 int calc_dist(const pii& p, const pii &thr) {
     if(p.second < thr.first || p.first > thr.second) return 0;
     return min(thr.second, p.second) - max(thr.first, p.first);
@@ -11,17 +12,21 @@ int calc_dist(const pii& p, const pii &thr) {
 int main() {
     ios_base::sync_with_stdio(0); cin.tie(0);
     cin >> N >> K; points.resize(N);
+    int max_end = -1;
     for(int i = 0; i < N; i++) {
-        cin >> points[i].first >> points[i].second;
-        for(int j = points[i].first; j < points[i].second; j++) psum[j]++;
+        int s, e; cin >> s >> e;
+        max_end = max(max_end, e);
+        arr[s]++;
+        arr[e]--;
     }
-    sort(points.begin(), points.end());
-    int max_pos = points[N-1].second;
-    vector<pii> cur;
+    psum[0] = arr[0];
+    for(int i = 1; i < 1000001; i++) {
+        psum[i] = psum[i-1]+arr[i];
+    }
     int l = 0, r = 0;
     int tmp = 0;
-    while(l <= max_pos) {
-        if(tmp < K && r > max_pos) break;
+    while(l <= max_end) {
+        if(tmp < K && r > max_end) break;
         if(tmp < K) {
             tmp += psum[r];
             r++;
