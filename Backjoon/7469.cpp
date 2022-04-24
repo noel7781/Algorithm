@@ -12,7 +12,7 @@ struct segTree {
         rangeVec.assign(4*n, vector<int>());
         init(arr, 0, n-1, 1);
     }
-    vector<int> init(const vector<int>& arr, int left, int right, int node) {
+    vector<int>& init(const vector<int>& arr, int left, int right, int node) {
         if(left == right) {
             rangeVec[node].push_back(arr[left]);
             return rangeVec[node];
@@ -20,29 +20,40 @@ struct segTree {
         int mid = (left + right) / 2;
         vector<int> l = init(arr, left, mid, node*2);
         vector<int> r = init(arr, mid+1, right, node*2+1);
-        rangeVec[node].insert(rangeVec[node].end(), l.begin(), l.end());
-        rangeVec[node].insert(rangeVec[node].end(), r.begin(), r.end());
+        auto lit = l.begin();
+        auto rit = r.begin();
+        while(lit != l.end() && rit != r.end()) {
+            if(*lit > *rit) {
+                rangeVec[node].push_back(*rit);
+                rit++;
+            } else {
+                rangeVec[node].push_back(*lit);
+                lit++;
+            }
+        }
+        while(lit != l.end()) {
+            rangeVec[node].push_back(*lit);
+            lit++;
+        }
+        while(rit != r.end()) {
+            rangeVec[node].push_back(*rit);
+            rit++;
+        }
         return rangeVec[node];
     }
-    vector<int> query(int left, int right, int nodeLeft, int nodeRight, int node) {
-        vector<int> v;
-        if(left > nodeRight || right < nodeLeft) return v;
+    int query(int left, int right, int nodeLeft, int nodeRight, int node, int k) {
+        if(left > nodeRight || right < nodeLeft) return 0;
         if(left <= nodeLeft && nodeRight <= right) {
-            return rangeVec[node];
+            return upper_bound(rangeVec[node].begin(), rangeVec[node].end(), k) - rangeVec[node].begin();
         }
         int mid = (nodeLeft + nodeRight) / 2;
-        vector<int> l = query(left, right, nodeLeft, mid, node*2);
-        vector<int> r = query(left, right, mid+1, nodeRight, node*2 + 1);
-        v.insert(v.end(), l.begin(), l.end());
-        v.insert(v.end(), r.begin(), r.end());
-        return v;
+        int l = query(left, right, nodeLeft, mid, node*2, k);
+        int r = query(left, right, mid+1, nodeRight, node*2 + 1, k);
+        return l+r;
     }
-    vector<int> query(int left, int right) {
-        return query(left, right, 0, n-1, 1);
-    }
-    int query(int left, int right, int q) {
-        vector<int> ret = query(left, right);
-        return ret[q];
+    int query(int left, int right, int k) {
+        int ret = query(left, right, 0, n-1, 1, k);
+        return ret;
     }
 };
 
@@ -56,6 +67,16 @@ int main() {
     struct segTree t(arr);
     while(q--) {
         int a, b, n; cin >> a >> b >> n;
-        cout << t.query(a-1, b-1, n-1) << "\n";
+        int lo = -1e9-1, hi = 1e9;
+        while(lo+1 < hi) {
+            int mid = (lo+hi)>>1;
+            if(t.query(a-1, b-1, mid) >= n) {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
+        }
+        cout << hi << "\n";
     }
 }
+
