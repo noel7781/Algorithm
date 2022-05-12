@@ -4,6 +4,7 @@ typedef pair<int, int> pii;
 int K;
 vector<int> A, B;
 vector<int> A_to_idx, B_to_idx;
+vector<int> check;
 bool calc_dist(int x, int y) {
     int a_dist = 0, b_dist = 0;
     int p1 = A_to_idx[x], p2 = A_to_idx[y];
@@ -33,13 +34,23 @@ set<pii> solve(int left, int right) {
             int l_cnt = -l_it->first, l_first = l_it->second;
             int r_cnt = -r_it->first, r_first = r_it->second;
             if(calc_dist(l_first, r_first)) {
-                ret.insert({-(l_cnt+r_cnt), l_first});
+                int min_v = min(l_first, r_first);
+                if(check[min_v] <= l_cnt+r_cnt) {
+                    check[min_v] = l_cnt+r_cnt;
+                    ret.insert({-(l_cnt+r_cnt), min_v});
+                }
             } else {
                 if(l_cnt >= r_cnt) {
-                    ret.insert({-l_cnt, l_first});
+                    if(check[l_first] <= l_cnt) {
+                        check[l_first] = l_cnt;
+                        ret.insert({-l_cnt, l_first});
+                    }
                 }
                 if(l_cnt <= r_cnt) {
-                    ret.insert({-r_cnt, r_first});
+                    if(check[r_first] <= r_cnt) {
+                        check[r_first] = r_cnt;
+                        ret.insert({-r_cnt, r_first});
+                    }
                 }
             }
         }
@@ -48,7 +59,11 @@ set<pii> solve(int left, int right) {
         int l_cnt = -l_it->first, l_first = l_it->second;
         for(int j = mid+1; j <= right; j++) {
             if(calc_dist(l_first, A[j])) {
-                ret.insert({-(l_cnt+1), l_first});
+                int min_v = min(A[j], l_first);
+                if(check[min_v] <= l_cnt+1) {
+                    ret.insert({-(l_cnt+1), min_v});
+                    check[min_v] = l_cnt+1;
+                }
             }
 
         }
@@ -57,29 +72,23 @@ set<pii> solve(int left, int right) {
         int r_cnt = -r_it->first, r_first = r_it->second;
         for(int i = left; i <= mid; i++) {
             if(calc_dist(A[i], r_first)) {
-                ret.insert({-(r_cnt+1), r_first});
+                int min_v = min(A[i], r_first);
+                if(check[min_v] <= r_cnt+1) {
+                    ret.insert({-(r_cnt+1), min(A[i], r_first)});
+                    check[min_v] = r_cnt+1;
+                }
             }
         }
     }
-    if(ret.empty()) return ret;
-    set<pii> sub;
-    int max_ret = ret.begin()->first;
-    for(auto it = ret.begin(); it != ret.end(); it++) {
-        if(it->first == max_ret) {
-            sub.insert(*it);
-        } else {
-            break;
-        }
-    }
-    return sub;
+    return ret;
 }
 int main() {
+    ios_base::sync_with_stdio(0); cin.tie(0);
     cin >> K;
     int N = pow(2, K-1);
-    A.resize(N);
-    B.resize(N);
-    A_to_idx.resize(N);
-    B_to_idx.resize(N);
+    A.resize(N); B.resize(N);
+    A_to_idx.resize(N); B_to_idx.resize(N);
+    check.resize(N);
     int index = 0;
     for(auto &it: A) {
         cin >> it;
