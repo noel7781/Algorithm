@@ -10,31 +10,29 @@ int main() {
     cin >> N >> K;
     vector<int> dists(100001, 1e9);
     dists[N] = 0;
-    priority_queue<pii, vector<pii>, greater<pii> > pq;
-    pq.push({0, N});
-    while(!pq.empty()) {
-        auto [cost, pos] = pq.top(); pq.pop();
+    deque<int> dq;
+    dq.push_back(N);
+    while(!dq.empty()) {
+        auto pos = dq.front(); dq.pop_front();
         if(pos == K) {
-            cout << cost << "\n";
+            cout << dists[pos] << "\n";
             return 0;
         }
-        if(dists[pos] < cost) continue;
-        int next_cost = cost+1;
+        int next_cost = dists[pos] + 1;
         int next_pos = pos+1;
         if(inRange(next_pos) && dists[next_pos] > next_cost) {
             dists[next_pos] = next_cost;
-            pq.push({next_cost, next_pos});
+            dq.push_back(next_pos);
         }
         next_pos = pos-1;
         if(inRange(next_pos) && dists[next_pos] > next_cost) {
             dists[next_pos] = next_cost;
-            pq.push({next_cost, next_pos});
+            dq.push_back(next_pos);
         }
         next_pos = pos*2;
-        if(inRange(next_pos) && dists[next_pos] > cost) {
-            dists[next_pos] = cost;
-            pq.push({cost, next_pos});
+        if(inRange(next_pos) && dists[next_pos] > dists[pos]) {
+            dists[next_pos] = dists[pos];
+            dq.push_front(next_pos);
         }
     }
-
 }
