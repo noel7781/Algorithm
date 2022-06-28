@@ -25,6 +25,7 @@ int main() {
             cout << blacks << "\n";
             return 0;
         }
+        if(blacks > dists[cur_y][cur_x]) continue;
         for(int d = 0; d < 4; d++) {
             int nxt_y = cur_y + dy[d], nxt_x = cur_x + dx[d];
             if(inRange(nxt_y, nxt_x)) {
