@@ -29,14 +29,15 @@ int main() {
         adj[q].push_back(p);
     }
     for(int i = 1; i <= N; i++) {
-        if(!is_visit[i]) {
-            int cnt = dfs(i);
-            V.push_back({-cnt, i});
-        }
+        memset(is_visit, 0, sizeof(is_visit));
+        is_visit[i] = 1;
+        int cnt = dfs(i);
+        V.push_back({-cnt, i});
     }
     sort(V.begin(), V.end());
+    int ans = V[0].first;
     for(const auto& it: V) {
-        cout << it.second << " ";
+        if(it.first == ans) cout << it.second << " ";
     }
     cout << "\n";
     return 0;
