@@ -1,0 +1,8 @@
+*.in
+*.out
+*.dSYM
+*.vscode
+package-lock.json
+gen.py
+Main.*
+Main
